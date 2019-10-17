@@ -1,0 +1,9 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+vcs.xml
+# Crash log files
+crash.log
