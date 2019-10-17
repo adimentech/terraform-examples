@@ -4,6 +4,6 @@
 # .tfstate files
 *.tfstate
 *.tfstate.*
-vcs.xml
+**/.idea/*
 # Crash log files
 crash.log
