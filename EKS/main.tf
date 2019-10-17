@@ -3,32 +3,40 @@ provider "aws" {
 }
 
 module "eks-demo-vpc" {
-  source = "terraform-aws-modules/vpc/aws"
+  source  = "terraform-aws-modules/vpc/aws"
   version = "1.71.0"
 
-  name = "${var.stack_name}-vpc"
-  cidr = "${var.vpc_cidr}"
+  name                  = "${var.stack_name}"
+  cidr                  = "${var.vpc_cidr}"
   secondary_cidr_blocks = "${var.secondary_cidr_blocks}"
 
   azs             = "${var.azs}"
   private_subnets = "${var.private_subnets}"
   public_subnets  = "${var.public_subnets}"
 
-  enable_nat_gateway = true
-  single_nat_gateway = true
-  one_nat_gateway_per_az = false
+  private_subnet_tags = {
+    "kubernetes.io/cluster/eks-demo" =  "shared"
+    "kubernetes.io/role/internal-elb" = 1
+  }
 
-  enable_vpn_gateway = false
+  public_subnet_tags = {
+    "kubernetes.io/cluster/eks-demo" =  "shared"
+    "kubernetes.io/role/elb" = 1
+}
+
+  enable_nat_gateway = "true"
+  single_nat_gateway = "true"
 
   tags = {
-    Terraform = "true"
+    Terrafrom   = "true"
     Environment = "dev"
-    Project = "${var.stack_name}"
+    Project     = "${var.stack_name}"
+    "kubernetes.io/cluster/eks-demo" =  "shared"
   }
 }
 
 module "eks-demo-cluster" {
-  source       = "terraform-aws-modules/eks/aws"
+  source  = "terraform-aws-modules/eks/aws"
   version = "4.0.2"
 
   cluster_name = "eks-demo"
@@ -38,9 +46,10 @@ module "eks-demo-cluster" {
   worker_groups = [
     {
       instance_type = "${var.eks_worker_node_type}"
+      asg_min_size  = 1
       asg_max_size  = 2
       key           = "${var.ssh_key_name}"
-    }
+    },
   ]
 
   cluster_create_timeout = "30m"
